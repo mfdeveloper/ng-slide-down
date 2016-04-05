@@ -13,8 +13,10 @@ angular.module("ng-slide-down", []).directive "ngSlideDown", ($timeout )->
     emitOnClose = attrs.emitOnClose
     onClose = attrs.onClose
     lazyRender = attrs.lazyRender != undefined
+    slideClass = attrs.slideClass || "open"
     closePromise = null
     openPromise = null
+    elementToClass = if attrs.slideClassParent == 'true' then element.parent() else element
 
     getHeight = (passedScope)->
       height = 0
@@ -36,23 +38,29 @@ angular.module("ng-slide-down", []).directive "ngSlideDown", ($timeout )->
           height: getHeight()
         }
         openPromise = $timeout ()->
-          element.css {
+          element.css({
             overflow: "visible"
             transition: "none",
             height: "auto"
-          }
+          })
+
+          elementToClass.addClass(slideClass)
+
         , duration*1000
 
 
     hide = ()->
       $timeout.cancel(openPromise) if openPromise
-      element.css {
+      element.css({
         overflow: "hidden"
         transitionProperty: "height"
         transitionDuration: "#{duration}s"
         transitionTimingFunction: timingFunction
         height: '0px'
-      }
+      })
+
+      elementToClass.removeClass(slideClass)
+
       if emitOnClose || onClose || lazyRender
         closePromise = $timeout ()->
           scope.$emit emitOnClose, {} if emitOnClose
